@@ -5,7 +5,7 @@ el.style.marginTop = "0px";
 el.style.fontFamily = "'Lucida Console', Monaco, monospace";
 var s_x = 0;
 var s_y = 0;
-/* Pull request test */
+/* Pull request test 2 */
 function clrscr() {
     var temp = el.textContent.split("");
     var count = 0;
