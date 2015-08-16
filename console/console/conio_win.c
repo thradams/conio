@@ -177,17 +177,22 @@ int movetext(int left, int top, int right, int bottom, int destleft, int desttop
 
 int gettext(int left, int top, int right, int bottom, void*destin)
 {
+    //coordernadas comecam em zero p windows
+    left--;
+    top--;
+    right--;
+    bottom--;
+
     if (destin == 0)
         return 0;
     char * pszText = (char *)destin;
 
     int count = 0;
-    for (int k = top; (k <= bottom) && (*pszText); k++)
+    for (int k = top; k <= bottom; k++)
     {
-        for (int i = left; (i <= right) && (*pszText); i++)
+        for (int i = left; i <= right; i++)
         {
-            COORD point = { (SHORT)i, (SHORT)k
-            };
+            COORD point = { (SHORT)i, (SHORT)k};
 
             wchar_t ch;
             DWORD c;
