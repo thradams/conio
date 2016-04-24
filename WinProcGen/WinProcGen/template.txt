@@ -1,0 +1,20 @@
+{class}_#begin
+/*
+    Generated windows procedure for {class}
+*/
+ {class}_WndProc()
+ {
+   switch ()
+   {
+
+WORD {class}_OnPaint({class}* p, HDC hdc);
+case WM_ONPAINT:
+  {class}_OnPaint(hdc);
+
+WORD {class}_OnClose({class}* p);
+  case WM_CLOSE:
+    {class}_OnClose();
+
+{class}_#end
+    }
+  }
