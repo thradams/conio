@@ -200,7 +200,7 @@ void clrscr()
   fflush(stdout);
 }
 
-int textcolor(int newcolor)
+void textcolor(int newcolor)
 {
   //https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -280,7 +280,7 @@ int textcolor(int newcolor)
   printf(s);
 }
 
-int textbackground(int newcolor)
+void textbackground(int newcolor)
 {
   //https://en.wikipedia.org/wiki/ANSI_escape_code
 
