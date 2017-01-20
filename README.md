@@ -1,7 +1,6 @@
-# conio
-The borland conio.h for windows
-Pull request test
+# Conio.h for windows and linux
 
-´´´cpp
-if 
-´´´
+
+conio.h documentation
+http://docs.embarcadero.com/products/rad_studio/radstudio2007/RS2007_helpupdates/HUpdate4/EN/html/devwin32/coniohpart_xml.html
+
