@@ -9,34 +9,34 @@
 
 struct text_info
 {
-	unsigned char winleft;        /* left window coordinate */
-	unsigned char wintop;         /* top window coordinate */
-	unsigned char winright;       /* right window coordinate */
-	unsigned char winbottom;      /* bottom window coordinate */
-	unsigned char attribute;      /* text attribute */
-	unsigned char normattr;       /* normal attribute */
-	unsigned char currmode;       /* current video mode:
-								  BW40, BW80, C40, C80, or C4350 */
-	unsigned char screenheight;   /* text screen's height */
-	unsigned char screenwidth;    /* text screen's width */
-	unsigned char curx;           /* x-coordinate in current window */
-	unsigned char cury;           /* y-coordinate in current window */
+  unsigned char winleft;        /* left window coordinate */
+  unsigned char wintop;         /* top window coordinate */
+  unsigned char winright;       /* right window coordinate */
+  unsigned char winbottom;      /* bottom window coordinate */
+  unsigned char attribute;      /* text attribute */
+  unsigned char normattr;       /* normal attribute */
+  unsigned char currmode;       /* current video mode:
+                  BW40, BW80, C40, C80, or C4350 */
+  unsigned char screenheight;   /* text screen's height */
+  unsigned char screenwidth;    /* text screen's width */
+  unsigned char curx;           /* x-coordinate in current window */
+  unsigned char cury;           /* y-coordinate in current window */
 };
 
 static void clearbits(unsigned char * v,
-	int bit_index,
-	int nbits)
+  int bit_index,
+  int nbits)
 {
   unsigned mask = ~((unsigned char)(0)) << (sizeof(v) * CHAR_BIT - (unsigned char)(nbits));
-  mask = mask >> (sizeof(v) * CHAR_BIT - (unsigned char)(bit_index) - (unsigned char)(nbits));
+  mask = mask >> (sizeof(v) * CHAR_BIT - (unsigned char)(bit_index)-(unsigned char)(nbits));
   *v &= ~mask;
 }
 
 
 static void setbits(unsigned char *v,
-	int bit_index,
-	int nbits,
-	unsigned char number)
+  int bit_index,
+  int nbits,
+  unsigned char number)
 {
   clearbits(&number, nbits, sizeof(number) * CHAR_BIT - nbits);
 
@@ -83,21 +83,21 @@ void _setcursortype(int cur_t)
 
   switch (cur_t)
   {
-    case _NOCURSOR://     (turns off the cursor)
-      ci.bVisible = FALSE;
-      ci.dwSize = 0;
-      break;
+  case _NOCURSOR://     (turns off the cursor)
+    ci.bVisible = FALSE;
+    ci.dwSize = 1;
+    break;
 
-    case _SOLIDCURSOR://  (solid block cursor)
-      ci.bVisible = TRUE;
-      ci.dwSize = 100;
-      break;
+  case _SOLIDCURSOR://  (solid block cursor)
+    ci.bVisible = TRUE;
+    ci.dwSize = 100;
+    break;
 
-    default:
-    case _NORMALCURSOR: // (normal underscore cursor)
-      ci.bVisible = TRUE;
-      ci.dwSize = 50;
-      break;
+  default:
+  case _NORMALCURSOR: // (normal underscore cursor)
+    ci.bVisible = TRUE;
+    ci.dwSize = 50;
+    break;
   }
 
   SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ci);
@@ -129,9 +129,31 @@ void textcolor(int newcolor)
 }
 
 
+int wherex()
+{
+  CONSOLE_SCREEN_BUFFER_INFO cbsi;
+  if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi))
+  {
+    return cbsi.dwCursorPosition.X + 1;
+  }
+  return -1;
+}
+
+int wherey()
+{
+  CONSOLE_SCREEN_BUFFER_INFO cbsi;
+  if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi))
+  {
+    return cbsi.dwCursorPosition.Y;
+  }
+  return -1;
+}
+
 void gotoxy(int x, int y)
 {
-  COORD point = { (SHORT)x, (SHORT)y };
+  COORD point ;
+  point.X = x - (short)1;
+  point.Y = y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), point);
 }
 
@@ -189,9 +211,79 @@ int kbhit(void)
 }
 
 
+static int getCursorPosition2(int *rows, int *cols)
+{
+  *rows = -1;
+  *cols = -1;
+
+  struct termios orig_termios;
+  int er = tcgetattr(STDIN_FILENO, &orig_termios);
+  if (er == -1)
+  {
+    printf("error\n");
+    return -1;
+  }
+
+
+  struct termios raw = orig_termios;
+  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  raw.c_oflag &= ~(OPOST);
+  raw.c_cflag |= (CS8);
+  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 1;
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
+  {
+    printf("error\n");
+    return -1;
+  }
+
+  char buf[32];
+  unsigned int i = 0;
+
+  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
+
+  while (i < sizeof(buf) - 1) {
+    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
+    if (buf[i] == 'R') break;
+    i++;
+  }
+  buf[i] = '\0';
+
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+
+  if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+  {
+    printf("error\n");
+    return -1;
+  }
+
+
+  return 0;
+}
+
+int wherex(void)
+{
+  int x, y;
+  getCursorPosition2(&x, &y);
+  return x;
+}
+
+int wherey(void)
+{
+  int x, y;
+  getCursorPosition2(&x, &y);
+  return y;
+}
+
+
 void gotoxy(int x, int y)
 {
   printf("\x1b[%d;%dH", y, x);
+  fflush(stdout);
 }
 
 void clrscr()
@@ -208,73 +300,73 @@ void textcolor(int newcolor)
 
   switch (newcolor)
   {
-    case BLACK:
-      s = "\x1b[30m";
-      break;
+  case BLACK:
+    s = "\x1b[30m";
+    break;
 
-    case BLUE:
-      s = "\x1b[34m";
-      break;
+  case BLUE:
+    s = "\x1b[34m";
+    break;
 
-    case GREEN :
-      s = "\x1b[32m";
-      break;
+  case GREEN:
+    s = "\x1b[32m";
+    break;
 
-    case CYAN :
-      s = "\x1b[36m";
-      break;
+  case CYAN:
+    s = "\x1b[36m";
+    break;
 
-    case RED :
-      s = "\x1b[31;1m";
-      break;
+  case RED:
+    s = "\x1b[31;1m";
+    break;
 
-    case MAGENTA :
-      s = "\x1b[35m";
-      break;
+  case MAGENTA:
+    s = "\x1b[35m";
+    break;
 
-    case BROWN :
-      s = "\x1b[31m";
-      break;
+  case BROWN:
+    s = "\x1b[31m";
+    break;
 
-    case LIGHTGRAY :
-      s = "\x1b[30;1m";
-      break;
+  case LIGHTGRAY:
+    s = "\x1b[30;1m";
+    break;
 
-    case DARKGRAY :
-      s = "\x1b[30m";
-      break;
+  case DARKGRAY:
+    s = "\x1b[30m";
+    break;
 
-    case LIGHTBLUE :
-      s = "\x1b[34;1m";
-      break;
+  case LIGHTBLUE:
+    s = "\x1b[34;1m";
+    break;
 
-    case LIGHTGREEN :
-      s = "\x1b[32,1m";;
-      break;
+  case LIGHTGREEN:
+    s = "\x1b[32,1m";;
+    break;
 
-    case LIGHTCYAN :
-      s = "\x1b[36;1m";
-      break;
+  case LIGHTCYAN:
+    s = "\x1b[36;1m";
+    break;
 
-    case LIGHTRED :
-      s = "\x1b[31;1m";
-      break;
+  case LIGHTRED:
+    s = "\x1b[31;1m";
+    break;
 
-    case LIGHTMAGENTA :
-      s = "\x1b[35;1m";
-      break;
+  case LIGHTMAGENTA:
+    s = "\x1b[35;1m";
+    break;
 
-    case YELLOW :
-      s = "\x1b[33;1m";
-      break;
+  case YELLOW:
+    s = "\x1b[33;1m";
+    break;
 
-    case WHITE :
-      s = "\x1b[37;1m";
-      break;
+  case WHITE:
+    s = "\x1b[37;1m";
+    break;
 
-    case BLINK :
-      s = "\x1b[30m";
-      break;
+  case BLINK:
+    s = "\x1b[30m";
+    break;
   };
 
   printf(s);
@@ -288,104 +380,114 @@ void textbackground(int newcolor)
 
   switch (newcolor)
   {
-    case BLACK:
-      s = "\x1b[40m";
-      break;
+  case BLACK:
+    s = "\x1b[40m";
+    break;
 
-    case BLUE:
-      s = "\x1b[44m";
-      break;
+  case BLUE:
+    s = "\x1b[44m";
+    break;
 
-    case GREEN :
-      s = "\x1b[42m";
-      break;
+  case GREEN:
+    s = "\x1b[42m";
+    break;
 
-    case CYAN :
-      s = "\x1b[46m";
-      break;
+  case CYAN:
+    s = "\x1b[46m";
+    break;
 
-    case RED :
-      s = "\x1b[41;1m";
-      break;
+  case RED:
+    s = "\x1b[41;1m";
+    break;
 
-    case MAGENTA :
-      s = "\x1b[45m";
-      break;
+  case MAGENTA:
+    s = "\x1b[45m";
+    break;
 
-    case BROWN :
-      s = "\x1b[41m";
-      break;
+  case BROWN:
+    s = "\x1b[41m";
+    break;
 
-    case LIGHTGRAY :
-      s = "\x1b[40;1m";
-      break;
+  case LIGHTGRAY:
+    s = "\x1b[40;1m";
+    break;
 
-    case DARKGRAY :
-      s = "\x1b[40m";
-      break;
+  case DARKGRAY:
+    s = "\x1b[40m";
+    break;
 
-    case LIGHTBLUE :
-      s = "\x1b[44;1m";
-      break;
+  case LIGHTBLUE:
+    s = "\x1b[44;1m";
+    break;
 
-    case LIGHTGREEN :
-      s = "\x1b[42,1m";;
-      break;
+  case LIGHTGREEN:
+    s = "\x1b[42,1m";;
+    break;
 
-    case LIGHTCYAN :
-      s = "\x1b[46;1m";
-      break;
+  case LIGHTCYAN:
+    s = "\x1b[46;1m";
+    break;
 
-    case LIGHTRED :
-      s = "\x1b[41;1m";
-      break;
+  case LIGHTRED:
+    s = "\x1b[41;1m";
+    break;
 
-    case LIGHTMAGENTA :
-      s = "\x1b[45;1m";
-      break;
+  case LIGHTMAGENTA:
+    s = "\x1b[45;1m";
+    break;
 
-    case YELLOW :
-      s = "\x1b[43;1m";
-      break;
+  case YELLOW:
+    s = "\x1b[43;1m";
+    break;
 
-    case WHITE :
-      s = "\x1b[47;1m";
-      break;
+  case WHITE:
+    s = "\x1b[47;1m";
+    break;
 
-    case BLINK :
-      s = "\x1b[40m";
-      break;
+  case BLINK:
+    s = "\x1b[40m";
+    break;
   };
 
   printf(s);
 }
 
 
-static struct termios old, new;
-
-/* Initialize new terminal i/o settings */
-void initTermios(int echo)
-{
-  tcgetattr(0, &old); /* grab old terminal i/o settings */
-  new = old; /* make new settings same as old settings */
-  new.c_lflag &= ~ICANON; /* disable buffered i/o */
-  new.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
-  tcsetattr(0, TCSANOW, &new); /* use these new terminal i/o settings now */
-}
-
-/* Restore old terminal i/o settings */
-void resetTermios(void)
-{
-  tcsetattr(0, TCSANOW, &old);
-}
-
 /* Read 1 character - echo defines echo mode */
 static char getch_(int echo)
 {
-  char ch;
-  initTermios(echo);
-  ch = getchar();
-  resetTermios();
+  struct termios orig_termios;
+  if (tcgetattr(STDIN_FILENO, &orig_termios) != -1)
+  {
+    return -1;
+  }
+
+
+  struct termios raw = orig_termios;
+  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+  raw.c_oflag &= ~(OPOST);
+  raw.c_cflag |= (CS8);
+  raw.c_lflag &= ~(ICANON | IEXTEN | ISIG);
+
+  if (echo)
+    raw.c_lflag &= ~(ECHO);
+
+  raw.c_cc[VMIN] = 0;
+  raw.c_cc[VTIME] = 1;
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
+  {
+    return -1;
+  }
+
+  char ch = getchar();
+
+  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
+  {
+    return -1;
+  }
+
+
   return ch;
 }
 
@@ -417,22 +519,23 @@ void _setcursortype(int cur_t)
 {
   switch (cur_t)
   {
-    case _NOCURSOR:
-      printf("\x1b[?25l");
-      break;
+  case _NOCURSOR:
+    printf("\x1b[?25l");
+    break;
 
-    case _NORMALCURSOR:
-      printf("\x1b[?25h");
-      break;
+  case _NORMALCURSOR:
+    printf("\x1b[?25h");
+    break;
 
-    case _SOLIDCURSOR:
-      printf("\x1b[?25h");
-      break;
+  case _SOLIDCURSOR:
+    printf("\x1b[?25h");
+    break;
   }
 }
 
 
 #endif //linux
+
 
 
 
