@@ -9,7 +9,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif  /* __cplusplus */
-
+ 
+#include <stdio.h>
 #define cprintf printf
 
 enum COLORS
@@ -71,10 +72,13 @@ void gotoxy(int x, int y);
 void _setcursortype(int cur_t);
 void textbackground(int newcolor);
 void textcolor(int newcolor);
+int wherex(void);
+int wherey(void);
 
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */
 
 #endif //CONIO_H
+
 
