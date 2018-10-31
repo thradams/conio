@@ -1,6 +1,4 @@
 
-//http://docs.embarcadero.com/products/rad_studio/radstudio2007/RS2007_helpupdates/HUpdate4/EN/html/devwin32/coniohpart_xml.html
-
 
 #ifdef _WIN32
 
@@ -253,7 +251,7 @@ static int getCursorPosition2(int *rows, int *cols)
 
   if (buf[0] != '\x1b' || buf[1] != '[') return -1;
 
-  if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+  if (sscanf(&buf[2], "%d;%d", cols, rows) != 2) return -1;
 
   if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
   {
@@ -535,7 +533,4 @@ void _setcursortype(int cur_t)
 
 
 #endif //linux
-
-
-
 
