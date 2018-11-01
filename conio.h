@@ -41,6 +41,21 @@ enum CURSORTYPE
   _NORMALCURSOR // (normal underscore cursor
 };
 
+struct text_info
+{
+    unsigned char winleft;        /* left window coordinate */
+    unsigned char wintop;         /* top window coordinate */
+    unsigned char winright;       /* right window coordinate */
+    unsigned char winbottom;      /* bottom window coordinate */
+    unsigned char attribute;      /* text attribute */
+    unsigned char normattr;       /* normal attribute */
+    unsigned char currmode;       /* current video mode:
+                    BW40, BW80, C40, C80, or C4350 */
+    unsigned char screenheight;   /* text screen's height */
+    unsigned char screenwidth;    /* text screen's width */
+    unsigned char curx;           /* x-coordinate in current window */
+    unsigned char cury;           /* y-coordinate in current window */
+};
 
 #ifndef _WIN32
 char * cgets(char * _Buffer);
@@ -74,7 +89,7 @@ void textbackground(int newcolor);
 void textcolor(int newcolor);
 int wherex(void);
 int wherey(void);
-
+void gettextinfo(struct text_info *r);
 #ifdef __cplusplus
 }
 #endif  /* __cplusplus */
