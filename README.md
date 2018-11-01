@@ -17,3 +17,17 @@ http://docs.embarcadero.com/products/rad_studio/radstudio2007/RS2007_helpupdates
 
 ## VT 100
 http://ascii-table.com/ansi-escape-sequences-vt-100.php
+
+
+## Samples
+
+```c
+#include <conio.h>
+int main(void)
+{
+ cprintf("Press any key to continue:");
+    while (!kbhit()) /* do nothing */ ;
+    cprintf("\r\nA key was pressed...\r\n");
+    return 0;
+}
+```
