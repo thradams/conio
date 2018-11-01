@@ -118,3 +118,9 @@ int main(void)
 }
 ```
 
+## Windows WSL
+
+```
+sudo service ssh start
+```
+https://www.hanselman.com/blog/WritingAndDebuggingLinuxCApplicationsFromVisualStudioUsingTheWindowsSubsystemForLinux.aspx
