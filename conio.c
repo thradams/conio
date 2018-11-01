@@ -481,7 +481,7 @@ int putch(int c)
 
 int cputs(const char *str)
 {
-  puts(str);
+  fputs(str, stdout); 
   return 1;
 }
 
