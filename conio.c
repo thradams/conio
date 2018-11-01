@@ -196,10 +196,10 @@ int kbhit(void)
 }
 
 
-static int getCursorPosition2(int *rows, int *cols)
+static int getCursorPosition2(int *x, int *y)
 {
-    *rows = -1;
-    *cols = -1;
+    *x = -1;
+    *y = -1;
 
     char buf[32];
     unsigned int i = 0;
@@ -217,7 +217,7 @@ static int getCursorPosition2(int *rows, int *cols)
 
     if (buf[0] != '\x1b' || buf[1] != '[') return -1;
 
-    if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
+    if (sscanf(&buf[2], "%d;%d", y, x) != 2) return -1;
 
     return 0;
 }
