@@ -1,11 +1,13 @@
 # Conio.h for windows and linux
 
 This library implements (parts) the of old Turbo C conio.h
+
 See header file for suported functions.
 
-Help wanted for linux!
+Help wanted for linux! (thanks comp lang c)
 
-## How to try the orignal samples? 
+
+## How to try the original samples? 
 
 Turbo C online
 https://www.naclbox.com/gallery/turboc
