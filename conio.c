@@ -4,22 +4,9 @@
 
 #include <windows.h>
 #include "conio.h"
+#include <limits.h>
 
-struct text_info
-{
-  unsigned char winleft;        /* left window coordinate */
-  unsigned char wintop;         /* top window coordinate */
-  unsigned char winright;       /* right window coordinate */
-  unsigned char winbottom;      /* bottom window coordinate */
-  unsigned char attribute;      /* text attribute */
-  unsigned char normattr;       /* normal attribute */
-  unsigned char currmode;       /* current video mode:
-                  BW40, BW80, C40, C80, or C4350 */
-  unsigned char screenheight;   /* text screen's height */
-  unsigned char screenwidth;    /* text screen's width */
-  unsigned char curx;           /* x-coordinate in current window */
-  unsigned char cury;           /* y-coordinate in current window */
-};
+
 
 static void clearbits(unsigned char * v,
   int bit_index,
@@ -211,56 +198,28 @@ int kbhit(void)
 
 static int getCursorPosition2(int *rows, int *cols)
 {
-  *rows = -1;
-  *cols = -1;
+    *rows = -1;
+    *cols = -1;
 
-  struct termios orig_termios;
-  int er = tcgetattr(STDIN_FILENO, &orig_termios);
-  if (er == -1)
-  {
-    printf("error\n");
-    return -1;
-  }
+    char buf[32];
+    unsigned int i = 0;
+    int ch;
 
+    printf("\x1B[6n");
 
-  struct termios raw = orig_termios;
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
-  raw.c_cflag |= (CS8);
-  raw.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 1;
+    while (i < sizeof(buf) - 1)
+    {
+        ch = getch();
+        if (ch == EOF || ch == 'R') break;
+        buf[i++] = ch;
+    }
+    buf[i] = '\0';
 
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-  {
-    printf("error\n");
-    return -1;
-  }
+    if (buf[0] != '\x1b' || buf[1] != '[') return -1;
 
-  char buf[32];
-  unsigned int i = 0;
+    if (sscanf(&buf[2], "%d;%d", rows, cols) != 2) return -1;
 
-  if (write(STDOUT_FILENO, "\x1b[6n", 4) != 4) return -1;
-
-  while (i < sizeof(buf) - 1) {
-    if (read(STDIN_FILENO, &buf[i], 1) != 1) break;
-    if (buf[i] == 'R') break;
-    i++;
-  }
-  buf[i] = '\0';
-
-  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
-
-  if (sscanf(&buf[2], "%d;%d", cols, rows) != 2) return -1;
-
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
-  {
-    printf("error\n");
-    return -1;
-  }
-
-
-  return 0;
+    return 0;
 }
 
 int wherex(void)
@@ -286,7 +245,7 @@ void gotoxy(int x, int y)
 
 void clrscr()
 {
-  printf("\x1b[2J\x1b[1;1H");
+  cputs("\x1b[2J\x1b[1;1H");
   fflush(stdout);
 }
 
@@ -447,44 +406,31 @@ void textbackground(int newcolor)
     break;
   };
 
-  printf(s);
+  cputs(s);
 }
 
 
 /* Read 1 character - echo defines echo mode */
 static char getch_(int echo)
 {
-  struct termios orig_termios;
-  if (tcgetattr(STDIN_FILENO, &orig_termios) != -1)
-  {
-    return -1;
-  }
+    struct termios old, new;
+    int ch;
 
+    tcgetattr(0, &old);
 
-  struct termios raw = orig_termios;
-  raw.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-  raw.c_oflag &= ~(OPOST);
-  raw.c_cflag |= (CS8);
-  raw.c_lflag &= ~(ICANON | IEXTEN | ISIG);
+    new = old;
+    new.c_lflag &= ~ICANON;
+    if (!echo)
+    {
+        new.c_lflag &= ~ECHO;
+    }
+    tcsetattr(0, TCSANOW, &new);
 
-  if (echo)
-    raw.c_lflag &= ~(ECHO);
+    ch = getchar();
 
-  raw.c_cc[VMIN] = 0;
-  raw.c_cc[VTIME] = 1;
+    tcsetattr(0, TCSANOW, &old);
 
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw) == -1)
-  {
-    return -1;
-  }
-
-  char ch = getchar();
-
-  if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios) == -1)
-  {
-    return -1;
-  }
-
+    return ch;
 
   return ch;
 }
@@ -492,13 +438,40 @@ static char getch_(int echo)
 /* Read 1 character without echo */
 int getch(void)
 {
-  return getch_(0);
+    struct termios old, new;
+    int ch;
+
+    tcgetattr(0, &old);
+
+    new = old;
+    new.c_lflag &= ~ICANON;
+    new.c_lflag &= ~ECHO;
+    tcsetattr(0, TCSANOW, &new);
+
+    ch = getchar();
+
+    tcsetattr(0, TCSANOW, &old);
+
+    return ch;
 }
 
 /* Read 1 character with echo */
 int getche(void)
 {
-  return getch_(1);
+    struct termios old, new;
+    int ch;
+
+    tcgetattr(0, &old);
+
+    new = old;
+    new.c_lflag &= ~ICANON;
+    //new.c_lflag &= ~ECHO;
+    tcsetattr(0, TCSANOW, &new);
+
+    ch = getchar();
+
+    tcsetattr(0, TCSANOW, &old);
+    return ch;
 }
 
 int putch(int c)
@@ -506,10 +479,9 @@ int putch(int c)
   printf("%c", (char)c);
 }
 
-
 int cputs(const char *str)
 {
-  printf("%s", str);
+  puts(str);
   return 1;
 }
 
@@ -525,7 +497,7 @@ void _setcursortype(int cur_t)
     printf("\x1b[?25h");
     break;
 
-  case _SOLIDCURSOR:
+  case _SOLIDCURSOR://TODO
     printf("\x1b[?25h");
     break;
   }
