@@ -124,3 +124,8 @@ int main(void)
 sudo service ssh start
 ```
 https://www.hanselman.com/blog/WritingAndDebuggingLinuxCApplicationsFromVisualStudioUsingTheWindowsSubsystemForLinux.aspx
+
+
+## Current windows conio.h
+
+https://docs.microsoft.com/pt-br/cpp/c-runtime-library/console-and-port-i-o?view=vs-2017
