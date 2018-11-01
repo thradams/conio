@@ -25,9 +25,21 @@ http://ascii-table.com/ansi-escape-sequences-vt-100.php
 #include <conio.h>
 int main(void)
 {
- cprintf("Press any key to continue:");
+   cprintf("Press any key to continue:");
     while (!kbhit()) /* do nothing */ ;
     cprintf("\r\nA key was pressed...\r\n");
     return 0;
+}
+```
+
+```c
+#include <conio.h>
+int main(void)
+{
+   clrscr();
+   gotoxy(10,10);
+   cprintf("Current location is X: %d  Y: %d\r\n", wherex(), wherey());
+   getch();
+   return 0;
 }
 ```
