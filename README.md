@@ -77,3 +77,44 @@ int main(void)
 }
 ```
 
+```c
+
+
+
+#include "conio.h"
+#include <unistd.h>
+
+int main(void)
+{
+    printf("Part1\n");
+    printf("Part2\n");
+
+    _setcursortype(_NOCURSOR);
+    int y = wherey();
+    
+    for (int k = 0; k <= 100; k += 5)
+    {
+        cprintf("[");
+        
+        
+        for (int i = 0; i <= 100 / 5; i++)
+        {
+            if (i < k / 5)
+              cprintf("#");
+            else
+              cprintf(" ");
+        }
+        
+
+        printf("] %d%%  ", k);
+        sleep(1);
+        gotoxy(1, y);
+    }
+    printf("\n");
+    _setcursortype(_NORMALCURSOR);
+    printf("Completed\n");
+    return 0;
+
+}
+```
+
