@@ -43,3 +43,17 @@ int main(void)
    return 0;
 }
 ```
+
+```c
+
+#include <conio.h>
+int main(void)
+{
+    clrscr();
+    gotoxy(35, 12);
+    cprintf("Hello world");
+    getch();
+    return 0;
+}
+```
+
