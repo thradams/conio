@@ -3,9 +3,9 @@
 #ifdef _WIN32
 
 #include <windows.h>
+#include <conio.h>
 #include "conio.h"
 #include <limits.h>
-
 
 
 static void clearbits(unsigned char * v,
@@ -41,7 +41,7 @@ static unsigned char getbits(unsigned char v, int bit_index, int nbits)
 }
 
 
-void gettextinfo(struct text_info *r)
+void c_gettextinfo(struct text_info *r)
 {
   if (r == 0)
     return;
@@ -54,15 +54,24 @@ void gettextinfo(struct text_info *r)
   r->cury = (unsigned char)csbi.dwCursorPosition.Y;
   r->screenwidth = (unsigned char)csbi.dwMaximumWindowSize.X;
   r->screenheight = (unsigned char)csbi.dwMaximumWindowSize.X;
-  r->winleft = (unsigned char)csbi.srWindow.Left;
-  r->wintop = (unsigned char)csbi.srWindow.Top;
-  r->winright = (unsigned char)csbi.srWindow.Right;
-  r->winbottom = (unsigned char)csbi.srWindow.Bottom;
   r->normattr = 0;
-  r->currmode = 3;
 }
 
-void _setcursortype(int cur_t)
+int c_kbhit(void)
+{
+  return _kbhit();
+}
+int c_getch(void)
+{
+  return _getch();
+}
+
+int c_getche(void)
+{
+  return _getche();
+}
+
+void c_setcursortype(int cur_t)
 {
   CONSOLE_CURSOR_INFO ci;
 
@@ -88,33 +97,33 @@ void _setcursortype(int cur_t)
   SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &ci);
 }
 
-void textattr(int newattr)
+void c_textattr(int newattr)
 {
   SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), newattr);
 }
 
-void textbackground(int newcolor)
+void c_textbackground(int newcolor)
 {
   struct text_info ti;
-  gettextinfo(&ti);
+  c_gettextinfo(&ti);
   unsigned char wColor = ti.attribute;
   unsigned char old = getbits(wColor, 4, 4);
   setbits(&wColor, 4, 4, newcolor);
-  textattr(wColor);
+  c_textattr(wColor);
 }
 
-void textcolor(int newcolor)
+void c_textcolor(int newcolor)
 {
   struct text_info ti;
-  gettextinfo(&ti);
+  c_gettextinfo(&ti);
   unsigned char wColor = ti.attribute;
   int old = getbits(wColor, 0, 4);
   setbits(&wColor, 0, 4, newcolor);
-  textattr(wColor);
+  c_textattr(wColor);
 }
 
 
-int wherex()
+int c_wherex()
 {
   CONSOLE_SCREEN_BUFFER_INFO cbsi;
   if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi))
@@ -124,7 +133,7 @@ int wherex()
   return -1;
 }
 
-int wherey()
+int c_wherey()
 {
   CONSOLE_SCREEN_BUFFER_INFO cbsi;
   if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cbsi))
@@ -134,15 +143,15 @@ int wherey()
   return -1;
 }
 
-void gotoxy(int x, int y)
+void c_gotoxy(int x, int y)
 {
-  COORD point ;
+  COORD point;
   point.X = x - (short)1;
   point.Y = y;
   SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), point);
 }
 
-void clrscr()
+void c_clrscr()
 {
   COORD coordScreen = { 0, 0 };
   unsigned long cCharsWritten;
@@ -166,9 +175,10 @@ void clrscr()
 #include <termios.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include "conio.h"
 
-int kbhit(void)
+int c_kbhit(void)
 {
   struct termios oldt, newt;
   int ch;
@@ -198,38 +208,38 @@ int kbhit(void)
 
 static int getCursorPosition2(int *x, int *y)
 {
-    *x = -1;
-    *y = -1;
+  *x = -1;
+  *y = -1;
 
-    char buf[32];
-    unsigned int i = 0;
-    int ch;
+  char buf[32];
+  unsigned int i = 0;
+  int ch;
 
-    printf("\x1B[6n");
+  printf("\x1B[6n");
 
-    while (i < sizeof(buf) - 1)
-    {
-        ch = getch();
-        if (ch == EOF || ch == 'R') break;
-        buf[i++] = ch;
-    }
-    buf[i] = '\0';
+  while (i < sizeof(buf) - 1)
+  {
+    ch = c_getch();
+    if (ch == EOF || ch == 'R') break;
+    buf[i++] = ch;
+  }
+  buf[i] = '\0';
 
-    if (buf[0] != '\x1b' || buf[1] != '[') return -1;
+  if (buf[0] != '\x1b' || buf[1] != '[') return -1;
 
-    if (sscanf(&buf[2], "%d;%d", y, x) != 2) return -1;
+  if (sscanf(&buf[2], "%d;%d", y, x) != 2) return -1;
 
-    return 0;
+  return 0;
 }
 
-int wherex(void)
+int c_wherex(void)
 {
   int x, y;
   getCursorPosition2(&x, &y);
   return x;
 }
 
-int wherey(void)
+int c_wherey(void)
 {
   int x, y;
   getCursorPosition2(&x, &y);
@@ -237,19 +247,19 @@ int wherey(void)
 }
 
 
-void gotoxy(int x, int y)
+void c_gotoxy(int x, int y)
 {
   printf("\x1b[%d;%dH", y, x);
   fflush(stdout);
 }
 
-void clrscr()
+void c_clrscr()
 {
-  cputs("\x1b[2J\x1b[1;1H");
+  puts("\x1b[2J\x1b[1;1H");
   fflush(stdout);
 }
 
-void textcolor(int newcolor)
+void c_textcolor(int newcolor)
 {
   //https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -329,7 +339,7 @@ void textcolor(int newcolor)
   printf(s);
 }
 
-void textbackground(int newcolor)
+void c_textbackground(int newcolor)
 {
   //https://en.wikipedia.org/wiki/ANSI_escape_code
 
@@ -406,86 +416,76 @@ void textbackground(int newcolor)
     break;
   };
 
-  cputs(s);
+  puts(s);
 }
 
 
 /* Read 1 character - echo defines echo mode */
+/*
 static char getch_(int echo)
 {
-    struct termios old, new;
-    int ch;
+  struct termios old, new;
+  int ch;
 
-    tcgetattr(0, &old);
+  tcgetattr(0, &old);
 
-    new = old;
-    new.c_lflag &= ~ICANON;
-    if (!echo)
-    {
-        new.c_lflag &= ~ECHO;
-    }
-    tcsetattr(0, TCSANOW, &new);
+  new = old;
+  new.c_lflag &= ~ICANON;
+  if (!echo)
+  {
+    new.c_lflag &= ~ECHO;
+  }
+  tcsetattr(0, TCSANOW, &new);
 
-    ch = getchar();
+  ch = getchar();
 
-    tcsetattr(0, TCSANOW, &old);
+  tcsetattr(0, TCSANOW, &old);
 
-    return ch;
+  return ch;
+}
+*/
+
+/* Read 1 character without echo */
+int c_getch(void)
+{
+  struct termios old, new;
+  int ch;
+
+  tcgetattr(0, &old);
+
+  new = old;
+  new.c_lflag &= ~ICANON;
+  new.c_lflag &= ~ECHO;
+  tcsetattr(0, TCSANOW, &new);
+
+  ch = getchar();
+
+  tcsetattr(0, TCSANOW, &old);
 
   return ch;
 }
 
-/* Read 1 character without echo */
-int getch(void)
-{
-    struct termios old, new;
-    int ch;
-
-    tcgetattr(0, &old);
-
-    new = old;
-    new.c_lflag &= ~ICANON;
-    new.c_lflag &= ~ECHO;
-    tcsetattr(0, TCSANOW, &new);
-
-    ch = getchar();
-
-    tcsetattr(0, TCSANOW, &old);
-
-    return ch;
-}
-
 /* Read 1 character with echo */
-int getche(void)
+int c_getche(void)
 {
-    struct termios old, new;
-    int ch;
+  struct termios old, new;
+  int ch;
 
-    tcgetattr(0, &old);
+  tcgetattr(0, &old);
 
-    new = old;
-    new.c_lflag &= ~ICANON;
-    //new.c_lflag &= ~ECHO;
-    tcsetattr(0, TCSANOW, &new);
+  new = old;
+  new.c_lflag &= ~ICANON;
+  //new.c_lflag &= ~ECHO;
+  tcsetattr(0, TCSANOW, &new);
 
-    ch = getchar();
+  ch = getchar();
 
-    tcsetattr(0, TCSANOW, &old);
-    return ch;
+  tcsetattr(0, TCSANOW, &old);
+  return ch;
 }
 
-int putch(int c)
-{
-  printf("%c", (char)c);
-}
 
-int cputs(const char *str)
-{
-  fputs(str, stdout); 
-  return 1;
-}
-
-void _setcursortype(int cur_t)
+void c_setcursortype(int cur_t)
 {
   switch (cur_t)
   {
@@ -503,6 +503,27 @@ void _setcursortype(int cur_t)
   }
 }
 
+void c_gettextinfo(struct text_info *r)
+{
+
+  struct winsize w;
+  ioctl(0, TIOCGWINSZ, &w);
+
+  r->screenheight = w.ws_row;
+  r->screenwidth = w.ws_col;
+
+  int x, y;
+  getCursorPosition2(&x, &y);
+
+
+  r->curx = x;
+  r->cury = y;
+
+}
+
+void c_textattr(int newattr)
+{
+  //tODO
+}
 
 #endif //linux
-

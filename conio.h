@@ -1,18 +1,5 @@
+#pragma once
 
-
-#ifndef _CONIO_H_
-#define _CONIO_H_
-
-#ifdef _WIN32
-#include <conio.h> //from window
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif  /* __cplusplus */
- 
-#include <stdio.h>
-#define cprintf printf
 
 enum COLORS
 {
@@ -37,64 +24,34 @@ enum COLORS
 
 enum CURSORTYPE
 {
-  _NOCURSOR,//     (turns off the cursor
-  _SOLIDCURSOR,//  (solid block cursor
-  _NORMALCURSOR // (normal underscore cursor
+  _NOCURSOR,//     turns off the cursor
+  _SOLIDCURSOR,//  solid block cursor
+  _NORMALCURSOR // normal underscore cursor
 };
 
 struct text_info
 {
-    unsigned char winleft;        /* left window coordinate */
-    unsigned char wintop;         /* top window coordinate */
-    unsigned char winright;       /* right window coordinate */
-    unsigned char winbottom;      /* bottom window coordinate */
-    unsigned char attribute;      /* text attribute */
-    unsigned char normattr;       /* normal attribute */
-    unsigned char currmode;       /* current video mode:
-                    BW40, BW80, C40, C80, or C4350 */
-    unsigned char screenheight;   /* text screen's height */
-    unsigned char screenwidth;    /* text screen's width */
-    unsigned char curx;           /* x-coordinate in current window */
-    unsigned char cury;           /* y-coordinate in current window */
+  unsigned char attribute;      /* text attribute */
+  unsigned char normattr;       /* normal attribute */
+  int screenheight;   /* text screen's height */
+  int screenwidth;    /* text screen's width */
+  int curx;           /* x-coordinate in current window */
+  int cury;           /* y-coordinate in current window */
 };
 
-#ifndef _WIN32
-char * cgets(char * _Buffer);
-int cputs(const char *str);
-int getch(void);
-int getche(void);
-/*
-Checks for currently available keystrokes.
-kbhit checks to see if a keystroke is currently available.
-Any available keystrokes can be retrieved with getch or getche.
-*/
-int kbhit(void);
-int putch(int c);
-int ungetch(int ch);
-#else
-#define getch _getch
-#define putch _putch
-#define kbhit _kbhit
-#define cputs _cputs
-#define ungetch _ungetch
-#define getche _getche
-#define putch _putch
-#define cputs _cputs
-#endif
 
 
-void clrscr();
-void gotoxy(int x, int y);
-void _setcursortype(int cur_t);
-void textbackground(int newcolor);
-void textcolor(int newcolor);
-int wherex(void);
-int wherey(void);
-void gettextinfo(struct text_info *r);
-#ifdef __cplusplus
-}
-#endif  /* __cplusplus */
+int   c_getch(void);
+int   c_getche(void);
+int   c_kbhit(void);
 
-#endif //CONIO_H
-
+void  c_clrscr();
+void  c_gotoxy(int x, int y);
+void  c_setcursortype(int cur_t);
+void  c_textbackground(int newcolor);
+void  c_textcolor(int newcolor);
+int   c_wherex(void);
+int   c_wherey(void);
+void  c_gettextinfo(struct text_info *r);
+void  c_textattr(int newattr);
 

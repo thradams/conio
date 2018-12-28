@@ -1,101 +1,109 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include "conio.h"
 
+// sudo service ssh start
+//~/projects/Linux/bin/x64/Debug
 
-int main1(void)
+void Test1()
 {
-    char ch = 0;
-    printf("Input a string:");
-    while ((ch != '\n'))
-    {
-        ch = getch();
-        putch(ch);
-    }
-    return 0;
+  int i;
+  c_clrscr();
+  for (i = 0; i < 20; i++)
+  {
+    printf("%d\r\n", i);
+  }
+  printf("\r\nPress any key to clear screen");
+  c_getch();
+  c_clrscr();
+  printf("The screen has been cleared!");
+  c_getch();  
 }
 
 
-int main2(void)
+void Test2()
 {
-    int i, j;
-    clrscr();
-    for (i=0; i<9; i++)
-    {
-        for (j=0; j<80; j++)
-            cprintf("C");
-        cprintf("\r\n");
-        textcolor(i+1);
-        textbackground(i);
-    }
-    return 0;
+
+  struct text_info ti;
+  c_gettextinfo(&ti);
+  printf("attribute        %2d\r\n", ti.attribute);
+  printf("normal attribute %2d\r\n", ti.normattr);
+  printf("screen height    %2d\r\n", ti.screenheight);
+  printf("screen width     %2d\r\n", ti.screenwidth);
+  printf("current x        %2d\r\n", ti.curx);
+  printf("current y        %2d\r\n", ti.cury);
+
 }
 
-int main3(void)
+void Test3()
 {
-    cprintf("Press any key to continue:");
-    while (!kbhit()) /* do nothing */ ;
-    cprintf("\r\nA key was pressed...\r\n");
-    return 0;
+  /*
+  Gets character from keyboard, does not echo to screen. 
+  getch reads a single character directly from the keyboard, 
+  without echoing to the screen
+  */
+
+  int c;
+  int extended = 0;
+  c = c_getch();
+  
+  if (!c)
+    extended = c_getch();
+  if (extended)
+    printf("The character is extended\n");
+  else
+    printf("The character isn't extended\n");
 }
 
-int main4(void)
+void Test4()
 {
-    clrscr();
-    gotoxy(35, 12);
-    cprintf("Hello world");
-    getch();
-    return 0;
-}
-
-int main5(void)
-{
-    char ch;
-    printf("Input a character:");
-    ch = getche();
+  int ch;
+  printf("Input a character:");
+  ch = c_getche();
+  if (ch)
+  {
     printf("\nYou input a '%c'\n", ch);
-    return 0;
+  }
+ 
+
 }
 
-int main6(void)
+void Test5()
 {
-    int c;
-    int extended = 0;
-    c = getch();
-    if (!c)
-        extended = getch();
-    if (extended)
-        printf("The character is extended\n");
-    else
-        printf("The character isn't extended\n");
-    return 0;
+  int i;
+  c_clrscr();
+  for (i = 0; i < 9; i++)
+  {
+    c_textattr(i + ((i + 1) << 4));
+    printf("This is a test\r\n");
+  }
 }
 
-int main7(void)
+void Test6()
 {
-    int i;
-    clrscr();
-    for (i = 0; i < 20; i++)
-        cprintf("%d\r\n", i);
-    cprintf("\r\nPress any key to clear screen");
-    getch();
-    clrscr();
-    cprintf("The screen has been cleared!");
-    getch();
-    return 0;
+  c_clrscr();
+  c_gotoxy(35, 12);
+  printf("Hello world");
+  c_getch();
 }
 
+void  Test7()
+{
+  printf("Press any key to continue:");
+  while (!c_kbhit())
+  {
+  }
+  
+  printf("\r\nA key was pressed...\r\n"); 
+  
+}
 int main(void)
 {
-    main1();
-    main2();
-    main3();
-    main4();
-    main5();
-    main6();
-    main7();
-
-
-    return 0;
+  //Test1();
+  //Test2();
+  Test3();
+  //Test4();
+  //Test5();
+  //Test6();
+  //Test7();
+  return 0;
 }
-
