@@ -336,7 +336,7 @@ void c_textcolor(int newcolor)
     break;
   };
 
-  printf(s);
+  printf("%s", s);
 }
 
 void c_textbackground(int newcolor)
