@@ -3,6 +3,8 @@
 This library implements (parts) the of old Turbo C conio.h
 See header file for suported functions.
 
+To avoid name conflicts a prefix "c_" was added into the original functions.
+
 Help wanted for linux!
 
 ## How to try the orignal samples? 
