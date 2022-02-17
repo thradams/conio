@@ -7,6 +7,14 @@ To avoid name conflicts a prefix "c_" was added into the original functions.
 
 Help wanted for linux!
 
+## How do I use this in my C++ Project
+
+```
+extern "C" {
+#include "conio.h"
+}
+```
+
 ## How to try the orignal samples? 
 
 Turbo C online
