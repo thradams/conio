@@ -7,7 +7,7 @@ To avoid name conflicts a prefix "c_" was added into the original functions.
 
 Help wanted for linux!
 
-## How to try the orignal samples? 
+## How to try the original samples? 
 
 Turbo C online
 https://www.naclbox.com/gallery/turboc
