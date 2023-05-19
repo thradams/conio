@@ -1,4 +1,4 @@
-# Conio.h for windows and linux
+# Turbo C like <conio.h> for windows and Linux
 
 This library implements (parts) the of old Turbo C conio.h
 See header file for suported functions.
@@ -18,3 +18,5 @@ https://www.naclbox.com/gallery/turboc
 http://docs.embarcadero.com/products/rad_studio/radstudio2007/RS2007_helpupdates/HUpdate4/EN/html/devwin32/coniohpart_xml.html
 
 
+## Windows 10
+Obs: Windows 10 suports console virtual terminal sequences
