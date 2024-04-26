@@ -8,6 +8,11 @@
 #include <limits.h>
 #include <stdbool.h>
 
+/* MinGW */
+#ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+#endif
+
 /*windows 10 can use VT100*/
 
 bool EnableVTMode() {
