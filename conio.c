@@ -453,18 +453,18 @@ void c_textbackground(int newcolor)
 /*
 static char getch_(int echo)
 {
-  struct termios old, new;
+  struct termios old, znew;
   int ch;
 
   tcgetattr(0, &old);
 
-  new = old;
-  new.c_lflag &= ~ICANON;
+  znew = old;
+  znew.c_lflag &= ~ICANON;
   if (!echo)
   {
-    new.c_lflag &= ~ECHO;
+    znew.c_lflag &= ~ECHO;
   }
-  tcsetattr(0, TCSANOW, &new);
+  tcsetattr(0, TCSANOW, &znew);
 
   ch = getchar();
 
@@ -477,15 +477,15 @@ static char getch_(int echo)
 /* Read 1 character without echo */
 int c_getch(void)
 {
-  struct termios old, new;
+  struct termios old, znew;
   int ch;
 
   tcgetattr(0, &old);
 
-  new = old;
-  new.c_lflag &= ~ICANON;
-  new.c_lflag &= ~ECHO;
-  tcsetattr(0, TCSANOW, &new);
+  znew = old;
+  znew.c_lflag &= ~ICANON;
+  znew.c_lflag &= ~ECHO;
+  tcsetattr(0, TCSANOW, &znew);
 
   ch = getchar();
 
@@ -497,15 +497,15 @@ int c_getch(void)
 /* Read 1 character with echo */
 int c_getche(void)
 {
-  struct termios old, new;
+  struct termios old, znew;
   int ch;
 
   tcgetattr(0, &old);
 
-  new = old;
-  new.c_lflag &= ~ICANON;
-  //new.c_lflag &= ~ECHO;
-  tcsetattr(0, TCSANOW, &new);
+  znew = old;
+  znew.c_lflag &= ~ICANON;
+  //znew.c_lflag &= ~ECHO;
+  tcsetattr(0, TCSANOW, &znew);
 
   ch = getchar();
 
